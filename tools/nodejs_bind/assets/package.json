@@ -1,6 +1,6 @@
 {
   "name": "@kuwork/neug",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "NeuG Graph Database Node.js bindings (kuwork fork) - high performance embedded graph database with Cypher query support",
   "main": "index.js",
   "keywords": ["graph", "database", "embedded", "cypher", "neug", "native", "addon", "napi"],
@@ -13,12 +13,12 @@
   "engines": { "node": ">=20.0.0" },
   "publishConfig": { "access": "public" },
   "optionalDependencies": {
-    "@kuwork/neug-linux-x86_64": "0.2.0",
-    "@kuwork/neug-linux-arm64": "0.2.0",
-    "@kuwork/neug-osx-arm64": "0.2.0",
-    "@kuwork/neug-osx-x86_64": "0.2.0",
-    "@kuwork/neug-windows-x86_64": "0.2.0",
-    "@kuwork/neug-windows-arm64": "0.2.0"
+    "@kuwork/neug-linux-x86_64": "0.2.1",
+    "@kuwork/neug-linux-arm64": "0.2.1",
+    "@kuwork/neug-osx-arm64": "0.2.1",
+    "@kuwork/neug-osx-x86_64": "0.2.1",
+    "@kuwork/neug-windows-x86_64": "0.2.1",
+    "@kuwork/neug-windows-arm64": "0.2.1"
   },
   "files": ["index.js"]
 }
