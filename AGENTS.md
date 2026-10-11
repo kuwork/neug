@@ -108,3 +108,112 @@ Cypher → ANTLR Parser → Binder → Logical Plan → gopt Converter → Physi
 
 - **C++**: C++20, clang-format (style=file)
 - **Python**: isort, black, flake8
+
+<!-- BACKLOG.MD GUIDELINES START -->
+<CRITICAL_INSTRUCTION>
+
+## Backlog.md Workflow
+
+This project uses Backlog.md for task and project management.
+
+**At the beginning of each conversation in this project, run `backlog instructions overview` before answering or taking action. Re-read it only if you have not read it yet in the current conversation.**
+
+Use the overview to decide whether to search, read, create, or update Backlog tasks.
+
+Use the detailed guides when needed:
+- `backlog instructions task-creation` for creating or splitting tasks
+- `backlog instructions task-execution` for planning and implementation workflow
+- `backlog instructions task-finalization` for completion and handoff
+- `backlog instructions milestones` for creating, editing, removing, and archiving milestones
+- `backlog instructions documents` for creating, updating, listing, and viewing project documents
+- `backlog instructions drafts` for creating, promoting, demoting, or archiving drafts
+
+Use `backlog <command> --help` before running unfamiliar commands. Help shows options, fields, and examples.
+
+### Wiki Skill Installation
+
+Backlog.md includes an LLM-managed wiki under `backlog/wiki/`. To enable wiki operations for the current agent, install the bundled `llm-wiki-for-backlog` skill:
+
+- `backlog wiki install claude` — Claude Code / Claude Desktop
+- `backlog wiki install codex` — OpenAI Codex CLI
+- `backlog wiki install agents` — Generic agents directory
+
+Use `--dry-run` to preview the operation and `--force` to overwrite an existing installation. After installing, refer to the skill guide for ingestion, query, lint, and flowback workflows.
+
+Do not edit Backlog task, draft, document, decision, or milestone markdown files directly. Use the `backlog` CLI so metadata, relationships, and history stay consistent.
+
+- If you encounter duplicate or ambiguous task IDs (e.g., `task-1` and `task-01`), run `backlog doctor` first. Do not rename files or edit frontmatter IDs manually. Apply `backlog doctor --fix` only after reviewing the preview, then use `backlog doctor --commit` to finalize or `backlog doctor --rollback` to undo before committing.
+
+</CRITICAL_INSTRUCTION>
+<!-- BACKLOG.MD GUIDELINES END -->
+
+<!-- BACKLOG.MD STATE MACHINE START -->
+## This project's state machine
+
+**Moving a task:**
+- Find the task's current status below and follow the matching `next` edge; obey the edge's `ai` and gather its `evidence` first.
+- Never take an edge listed under "Stop and wait for the user" without the user's answer.
+
+### Statuses
+
+| Status | Category | Exit | Board |
+| --- | --- | --- | --- |
+| To Do | active | - | shown |
+| Planning | wip | - | shown |
+| Plan Review | blocked | - | shown |
+| In Progress | wip | - | shown |
+| In Review | blocked | - | shown |
+| Done | done | complete | shown |
+| Dropped | dropped | archive | hidden |
+
+### AI permission tiers
+
+| `ai` | What it means |
+| --- | --- |
+| `allowed` | the AI may make this move on its own |
+| `allowed_if` | the AI may move only while the edge's `if` holds |
+| `propose` | the AI proposes the move and waits for the user |
+| `forbidden` | only the user may make this move |
+
+### Transitions
+
+Every declared `next` edge, grouped by the status it starts from.
+
+#### To Do
+
+- `To Do` -> `Planning` · when: The user has confirmed the description and acceptance criteria are complete; work can start · ai: allowed
+- `To Do` -> `Dropped` · when: The task is obsolete or abandoned; tell the user that dropping it archives the task · ai: propose
+
+#### Planning
+
+- `Planning` -> `Plan Review` · when: The implementation plan has been written to implementationPlan · ai: allowed_if · if: implementationPlan is not empty
+
+#### Plan Review
+
+- `Plan Review` -> `In Progress` · when: The user has approved the implementation plan · ai: allowed_if · if: the user has explicitly approved the implementation plan in conversation or comments
+- `Plan Review` -> `Planning` · when: The plan was rejected or needs changes · ai: propose · evidence: comments (stating the rejection reason)
+
+#### In Progress
+
+- `In Progress` -> `In Review` · when: Implementation is complete; diff / tests / acceptance notes are ready · ai: allowed_if · if: finalSummary is not empty
+- `In Progress` -> `Planning` · when: The plan needs adjustment discovered during implementation · ai: allowed
+
+#### In Review
+
+- `In Review` -> `Done` · when: The user has accepted the work · ai: allowed_if · if: the user has explicitly accepted the work in conversation or comments
+- `In Review` -> `In Progress` · when: Acceptance failed; rework needed · ai: propose · evidence: comments (stating the rework reason)
+
+`Done` and `Dropped` have no outgoing transitions.
+
+### Terminal statuses
+
+Reaching a status whose `category` is `done` or `dropped` (see the Statuses table) stamps `actualEnd`: `exit: complete` marks finished work, `exit: archive` marks work set aside, archived rather than completed.
+
+### Stop and wait for the user
+
+These edges are not the AI's to take:
+
+- `To Do` -> `Dropped` · ai: propose
+- `Plan Review` -> `Planning` · ai: propose
+- `In Review` -> `In Progress` · ai: propose
+<!-- BACKLOG.MD STATE MACHINE END -->

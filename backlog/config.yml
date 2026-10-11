@@ -1,0 +1,78 @@
+project_name: "NeuG"
+default_status: "To Do"
+statuses:
+  - name: "To Do"
+    category: active
+    next:
+      - to: "Planning"
+        when: "The user has confirmed the description and acceptance criteria are complete; work can start"
+        ai: allowed
+      - to: "Dropped"
+        when: "The task is obsolete or abandoned; tell the user that dropping it archives the task"
+        ai: propose
+  - name: "Planning"
+    category: wip
+    next:
+      - to: "Plan Review"
+        when: "The implementation plan has been written to implementationPlan"
+        ai: allowed_if
+        if: "implementationPlan is not empty"
+        requires: "implementationPlan is not empty"
+  - name: "Plan Review"
+    category: blocked
+    next:
+      - to: "In Progress"
+        when: "The user has approved the implementation plan"
+        ai: allowed_if
+        if: "the user has explicitly approved the implementation plan in conversation or comments"
+      - to: "Planning"
+        when: "The plan was rejected or needs changes"
+        ai: propose
+        evidence: "comments (stating the rejection reason)"
+  - name: "In Progress"
+    category: wip
+    next:
+      - to: "In Review"
+        when: "Implementation is complete; diff / tests / acceptance notes are ready"
+        ai: allowed_if
+        if: "finalSummary is not empty"
+        requires: "finalSummary is not empty"
+      - to: "Planning"
+        when: "The plan needs adjustment discovered during implementation"
+        ai: allowed
+  - name: "In Review"
+    category: blocked
+    next:
+      - to: "Done"
+        when: "The user has accepted the work"
+        ai: allowed_if
+        if: "the user has explicitly accepted the work in conversation or comments"
+      - to: "In Progress"
+        when: "Acceptance failed; rework needed"
+        ai: propose
+        evidence: "comments (stating the rework reason)"
+  - name: "Done"
+    category: done
+    exit: complete
+    next: []
+  - name: "Dropped"
+    category: dropped
+    exit: archive
+    display: false
+    next: []
+labels: []
+date_format: yyyy-mm-dd
+max_column_width: 20
+auto_open_browser: true
+hide_empty_columns: true
+auto_port: true
+default_port: 6420
+remote_operations: true
+auto_commit: false
+filesystem_only: false
+bypass_git_hooks: false
+check_active_branches: true
+active_branch_days: 30
+include_cross_branch: true
+task_prefix: "NeuG"
+locale: "zh-CN"
