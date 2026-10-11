@@ -64,48 +64,36 @@ jobs:
         run: |
           set -euo pipefail
 
-          # These names are npm pack outputs inside the downloaded artifact containers.
-          linux_x86_64=(dist/npm/graphscope-neug-linux-x86_64-*.tgz)
-          osx_arm64=(dist/npm/graphscope-neug-osx-arm64-*.tgz)
-          windows_x86_64=(dist/npm/graphscope-neug-windows-x86_64-*.tgz)
-
-          # Fail early if a required platform package was not built or downloaded.
-          if [ ! -f "${linux_x86_64[0]}" ]; then
-            echo "No linux-x86_64 npm tarball found."
-            exit 1
-          fi
-
-          if [ ! -f "${osx_arm64[0]}" ]; then
-            echo "No osx-arm64 npm tarball found."
-            exit 1
-          fi
-
-          if [ ! -f "${windows_x86_64[0]}" ]; then
-            echo "No windows-x86_64 npm tarball found."
-            exit 1
-          fi
-
           # The tag version must match every package version before publish is attempted.
-          VERSION="${RELEASE_TAG#v}"
-          python3 tools/nodejs_bind/scripts/validate_npm_version.py \
-            "${linux_x86_64[0]}" '@graphscope-neug/linux-x86_64' "$VERSION"
-          python3 tools/nodejs_bind/scripts/validate_npm_version.py \
-            "${osx_arm64[0]}" '@graphscope-neug/osx-arm64' "$VERSION"
-          python3 tools/nodejs_bind/scripts/validate_npm_version.py \
-            "${windows_x86_64[0]}" '@graphscope-neug/windows-x86_64' "$VERSION"
-          python3 tools/nodejs_bind/scripts/validate_npm_version.py \
-            dist/npm-main '@graphscope-neug/neug' "$VERSION" \
-            --optional-dependency '@graphscope-neug/linux-x86_64' \
-            --optional-dependency '@graphscope-neug/osx-arm64' \
-            --optional-dependency '@graphscope-neug/windows-x86_64'
+          # release-vX.Y.Z -> X.Y.Z ; vX.Y.Z -> X.Y.Z
+          VERSION="${RELEASE_TAG#release-}"
+          VERSION="${VERSION#v}"
 
-          # npm publish must run from package directories, so unpack platform tarballs first.
-          mkdir -p dist/npm-packages/linux-x86_64 dist/npm-packages/osx-arm64 dist/npm-packages/windows-x86_64
-          tar -xzf "${linux_x86_64[0]}" -C dist/npm-packages/linux-x86_64
-          tar -xzf "${osx_arm64[0]}" -C dist/npm-packages/osx-arm64
-          tar -xzf "${windows_x86_64[0]}" -C dist/npm-packages/windows-x86_64
+          PLATFORMS=(linux-x86_64 linux-arm64 osx-arm64 osx-x86_64 windows-x86_64 windows-arm64)
 
-          npm publish ./dist/npm-packages/linux-x86_64/package --access public
-          npm publish ./dist/npm-packages/osx-arm64/package --access public
-          npm publish ./dist/npm-packages/windows-x86_64/package --access public
+          for plat in "${PLATFORMS[@]}"; do
+            tgz=(dist/npm/kuwork-neug-"$plat"-*.tgz)
+            if [ ! -f "${tgz[0]}" ]; then
+              echo "Missing npm tarball for $plat"
+              exit 1
+            fi
+            pkg_dir="dist/npm-packages/$plat/package"
+            rm -rf "dist/npm-packages/$plat"
+            mkdir -p "dist/npm-packages/$plat"
+            tar -xzf "${tgz[0]}" -C "dist/npm-packages/$plat"
+            python3 tools/nodejs_bind/scripts/validate_npm_version.py \
+              "$pkg_dir" "@kuwork/neug-$plat" "$VERSION"
+            npm publish "$pkg_dir" --access public
+          done
+
+          # Validate the main package: version + every optional dependency version.
+          python3 tools/nodejs_bind/scripts/validate_npm_version.py \
+            dist/npm-main '@kuwork/neug' "$VERSION" \
+            --optional-dependency '@kuwork/neug-linux-x86_64' \
+            --optional-dependency '@kuwork/neug-linux-arm64' \
+            --optional-dependency '@kuwork/neug-osx-arm64' \
+            --optional-dependency '@kuwork/neug-osx-x86_64' \
+            --optional-dependency '@kuwork/neug-windows-x86_64' \
+            --optional-dependency '@kuwork/neug-windows-arm64'
+
           npm publish ./dist/npm-main --access public

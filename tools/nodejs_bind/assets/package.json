@@ -1,21 +1,24 @@
 {
-  "name": "@graphscope-neug/neug",
+  "name": "@kuwork/neug",
   "version": "0.2.0",
-  "description": "NeuG Graph Database Node.js bindings - high performance embedded graph database with Cypher query support",
+  "description": "NeuG Graph Database Node.js bindings (kuwork fork) - high performance embedded graph database with Cypher query support",
   "main": "index.js",
   "keywords": ["graph", "database", "embedded", "cypher", "neug", "native", "addon", "napi"],
-  "author": "GraphScope Team",
+  "author": "GraphScope Team (forked & republished by kuwork)",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alibaba/neug.git"
+    "url": "git+https://github.com/kuwork/neug.git"
   },
   "engines": { "node": ">=20.0.0" },
   "publishConfig": { "access": "public" },
   "optionalDependencies": {
-    "@graphscope-neug/linux-x86_64": "0.2.0",
-    "@graphscope-neug/osx-arm64": "0.2.0",
-    "@graphscope-neug/windows-x86_64": "0.2.0"
+    "@kuwork/neug-linux-x86_64": "0.2.0",
+    "@kuwork/neug-linux-arm64": "0.2.0",
+    "@kuwork/neug-osx-arm64": "0.2.0",
+    "@kuwork/neug-osx-x86_64": "0.2.0",
+    "@kuwork/neug-windows-x86_64": "0.2.0",
+    "@kuwork/neug-windows-arm64": "0.2.0"
   },
   "files": ["index.js"]
 }

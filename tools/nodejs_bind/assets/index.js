@@ -9,7 +9,8 @@ if (!os || !arch) {
   throw new Error(`NeuG: unsupported platform ${process.platform}-${process.arch}`);
 }
 
-const optionalPkg = `@graphscope-neug/${os}-${arch}`;
+// kuwork fork: scope changed from @graphscope-neug to @kuwork
+const optionalPkg = `@kuwork/neug-${os}-${arch}`;
 
 let binding;
 try {
