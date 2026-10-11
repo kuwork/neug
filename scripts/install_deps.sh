@@ -337,6 +337,18 @@ install_curl() {
   download_and_untar "${url}" "${file}" "${directory}"
   pushd ${directory} || exit
 
+  # Force curl to build against the self-built static OpenSSL 1.1.1k in
+  # ${install_prefix}. On macOS the configure script otherwise discovers the
+  # Homebrew OpenSSL 3 headers (via PKG_CONFIG_PATH / OPENSSL_ROOT_DIR) while
+  # linking the 1.1.1k static libs, producing a header/library version mismatch:
+  # curl's libcurl_la-openssl.o then references OpenSSL 3 symbols such as
+  # X509_STORE_load_file / X509_STORE_load_path that do not exist in 1.1.1k,
+  # and the link fails (e.g. "symbol(s) not found for architecture x86_64").
+  # Pinning OPENSSL_CFLAGS / OPENSSL_LIBS to ${install_prefix} keeps headers and
+  # libraries consistent regardless of the runner's Homebrew openssl@3 prefix.
+  OPENSSL_CFLAGS="-I${install_prefix}/include" \
+  OPENSSL_LIBS="-L${install_prefix}/lib -L${install_prefix}/lib64 -lssl -lcrypto" \
+  PKG_CONFIG_PATH="${install_prefix}/lib/pkgconfig:${install_prefix}/lib64/pkgconfig" \
   ./configure --prefix="${install_prefix}" \
     --disable-shared --enable-static --with-pic \
     --with-openssl="${install_prefix}" \
@@ -399,7 +411,13 @@ write_env_config() {
   } >> "${OUTPUT_ENV_FILE}"
   {
     if [[ "${OS_PLATFORM}" == *"Darwin"* ]]; then
-      echo "export OPENSSL_ROOT_DIR=${HOMEBREW_PREFIX}/opt/openssl@3"
+      # Point the build at the self-built static OpenSSL in ${install_prefix},
+      # not at Homebrew's openssl@3.  install_curl() links the static 1.1.1k
+      # build, so httpfs's find_package(OpenSSL REQUIRED) must resolve to the
+      # same 1.1.1k headers; otherwise headers (3.x) and libraries (1.1.1k)
+      # disagree on x86_64 and the link fails on OpenSSL 3-only symbols such as
+      # X509_STORE_load_file / X509_STORE_load_path.
+      echo "export OPENSSL_ROOT_DIR=${install_prefix}"
     elif [[ "${OS_PLATFORM}" == *"CentOS"* || "${OS_PLATFORM}" == *"Aliyun"* ]]; then
       if [[ "${OS_VERSION}" -eq "7" ]]; then
         echo "source /opt/rh/devtoolset-10/enable"

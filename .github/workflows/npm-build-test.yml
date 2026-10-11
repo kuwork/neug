@@ -380,13 +380,13 @@ jobs:
         run: |
           source ~/.neug_env
           cd tools/nodejs_bind
-          make build EXTRA_CMAKE_FLAGS="-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0"
+          make build EXTRA_CMAKE_FLAGS="-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_PREFIX_PATH=/opt/neug -DOPENSSL_ROOT_DIR=/opt/neug"
 
       - name: Pack
         run: |
           source ~/.neug_env
           cd tools/nodejs_bind
-          make pack EXTRA_CMAKE_FLAGS="-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0"
+          make pack EXTRA_CMAKE_FLAGS="-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_PREFIX_PATH=/opt/neug -DOPENSSL_ROOT_DIR=/opt/neug"
 
       - name: Prepare test data
         run: |
@@ -450,13 +450,13 @@ jobs:
         run: |
           source ~/.neug_env
           cd tools/nodejs_bind
-          make build EXTRA_CMAKE_FLAGS="-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0"
+          make build EXTRA_CMAKE_FLAGS="-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_PREFIX_PATH=/opt/neug -DOPENSSL_ROOT_DIR=/opt/neug"
 
       - name: Pack
         run: |
           source ~/.neug_env
           cd tools/nodejs_bind
-          make pack EXTRA_CMAKE_FLAGS="-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0"
+          make pack EXTRA_CMAKE_FLAGS="-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_PREFIX_PATH=/opt/neug -DOPENSSL_ROOT_DIR=/opt/neug"
 
       - name: Prepare test data
         run: |
